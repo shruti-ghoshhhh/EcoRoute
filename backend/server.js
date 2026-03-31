@@ -6,7 +6,21 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://eco-route-beryl.vercel.app"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 const authRoutes = require('./routes/authRoutes');

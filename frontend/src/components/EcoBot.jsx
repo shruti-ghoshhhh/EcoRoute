@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API = import.meta.env.VITE_API_URL;
 const EcoBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [language, setLanguage] = useState('English');
@@ -46,8 +47,8 @@ const EcoBot = () => {
             <div className="bg-zinc-900 border-b border-zinc-800 p-4 text-emerald-400 font-bold flex justify-between items-center">
               <span className="flex items-center gap-2 text-lg font-extrabold"><span className="text-2xl drop-shadow-[0_0_10px_rgba(52,211,153,0.5)] animate-bounce">🤖</span> EcoBot</span>
               <div className="flex items-center gap-3">
-                <select 
-                  value={language} 
+                <select
+                  value={language}
                   onChange={(e) => setLanguage(e.target.value)}
                   className="bg-zinc-950 border border-zinc-700 text-xs text-zinc-300 rounded px-2 py-1 outline-none focus:border-emerald-500 cursor-pointer"
                 >
@@ -62,7 +63,7 @@ const EcoBot = () => {
                 <button onClick={() => setIsOpen(false)} className="hover:text-zinc-200 opacity-50 hover:opacity-100 transition-opacity">✖</button>
               </div>
             </div>
-            
+
             <div className="flex-1 p-4 overflow-y-auto space-y-4 min-h-[300px] bg-zinc-950/50">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -100,7 +101,7 @@ const EcoBot = () => {
         <div className="relative group flex items-center justify-center">
           {/* Cute Hover Tooltip */}
           <div className="absolute right-full mr-4 bg-emerald-900/80 backdrop-blur-md border border-emerald-500/40 text-white text-xs font-bold px-4 py-2 rounded-2xl shadow-xl opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50">
-            Hi! I'm EcoBot 🌿<br/>Need recycling help?
+            Hi! I'm EcoBot 🌿<br />Need recycling help?
           </div>
           <motion.button
             whileHover={{ scale: 1.15, rotate: [0, -10, 10, -5, 5, 0] }}
