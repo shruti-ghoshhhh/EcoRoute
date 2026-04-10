@@ -21,7 +21,7 @@ const EcoBot = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/chat/ask', {
+      const res = await fetch('/api/chat/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: `[Please reply exclusively in ${language}] ${userMsg}` }),

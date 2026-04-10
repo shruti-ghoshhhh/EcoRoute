@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { getRank } from '../utils/levelUtils';
 
 const FloatingIcons = () => {
   const icons = [
@@ -85,19 +86,23 @@ const Leaderboard = () => {
                 key={user.rank} 
                 className={`p-5 md:p-6 rounded-3xl flex items-center gap-6 border ${user.color} transition-all hover:scale-[1.02] cursor-default shadow-lg`}
               >
-                <div className="text-3xl w-10 text-center drop-shadow-lg text-emerald-400 font-mono">
-                  {user.icon}
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-zinc-950/50 border border-zinc-700/50 text-emerald-400 rounded-full flex items-center justify-center font-bold text-lg uppercase tracking-widest hidden sm:flex">
-                    {user.name.substring(0, 2)}
+                  <div className="text-3xl w-10 text-center drop-shadow-lg text-emerald-400 font-mono">
+                    {getRank(user.points).icon}
                   </div>
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold text-zinc-100">{user.name}</h3>
-                    <p className="text-xs text-zinc-400 mt-1 uppercase tracking-widest font-bold">Global Rank #{user.rank}</p>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 bg-zinc-950/50 border border-zinc-700/50 text-emerald-400 rounded-full flex items-center justify-center font-bold text-lg uppercase tracking-widest hidden sm:flex">
+                      {user.name.substring(0, 2)}
+                    </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-zinc-100">{user.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Rank #{user.rank}</p>
+                        <span className="text-zinc-600">•</span>
+                        <p className="text-[10px] text-emerald-500 uppercase tracking-widest font-black">{getRank(user.points).title}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
                 <div className="ml-auto flex items-center gap-2">
                   <span className="text-xl md:text-2xl font-mono font-extrabold text-emerald-400 tracking-wider">

@@ -25,8 +25,15 @@ const Navbar = () => {
   return (
     <nav className="bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800/80 sticky top-0 z-50 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link to="/dashboard" className="text-2xl font-extrabold text-emerald-400 flex items-center gap-2 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-          <span className="text-3xl grayscale brightness-150">🌍</span> EcoRoute
+        <Link to="/dashboard" className="text-2xl font-extrabold flex items-center gap-2 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)] group">
+          <motion.span 
+            whileHover={{ rotate: 360 }} 
+            transition={{ duration: 1, ease: "easeInOut" }}
+            className="text-3xl"
+          >
+            🌍
+          </motion.span>
+          <span className="bg-gradient-to-r from-blue-500 via-emerald-500 to-green-500 bg-clip-text text-transparent">EcoRoute</span>
         </Link>
         
         {/* Desktop Links */}

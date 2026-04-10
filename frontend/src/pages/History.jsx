@@ -10,7 +10,7 @@ const History = () => {
   useEffect(() => {
     const fetchPickups = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/pickups', {
+        const res = await fetch('/api/pickups', {
           headers: { 'Authorization': `Bearer ${user?.token}` }
         });
         const data = await res.json();

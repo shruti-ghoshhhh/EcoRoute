@@ -8,6 +8,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import { getRank } from '../utils/levelUtils';
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -43,26 +44,47 @@ const Dashboard = () => {
     { title: "Calculate 5 EcoRoutes", progress: 0, target: "0/5 Done", points: "+20 XP" },
   ];
 
-  // Dynamic Leveling & Title Algorithm
+  // Dynamic Leveling & Title Algorithm via Utils
   const currentPoints = user?.points || 0;
-  const getRank = (xp) => {
-    if (xp < 100) return { level: 1, title: 'Beginner Cleaner', icon: '🌱', max: 100 };
-    if (xp < 300) return { level: 2, title: 'Eco Warrior', icon: '♻️', max: 300 };
-    if (xp < 600) return { level: 3, title: 'Planet Guardian', icon: '🌍', max: 600 };
-    return { level: 4, title: 'Earth Savior', icon: '🦸', max: xp === 0 ? 1 : xp };
-  };
   const rank = getRank(currentPoints);
-  const progressPercent = rank.level === 4 ? 100 : (currentPoints / rank.max) * 100;
+  const progressPercent = rank.progressPercent;
 
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [feedbackSent, setFeedbackSent] = useState(false);
+  const [pickups, setPickups] = useState([]);
+
+  useEffect(() => {
+    const fetchPickups = async () => {
+      try {
+        const res = await axios.get('/api/pickups', {
+          headers: { Authorization: `Bearer ${user?.token}` }
+        });
+        setPickups(res.data);
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+      }
+    };
+    if (user?.token) fetchPickups();
+  }, [user]);
+
+  // Real Stats Calculation Engine 🌍
+  const completedPickups = pickups.filter(p => p.status === 'Completed');
+  const getWeight = (volume) => {
+    switch(volume?.toLowerCase()) {
+      case 'small': return 10;
+      case 'large': return 25;
+      case 'industrial': return 200;
+      default: return 0;
+    }
+  };
+  const totalWaste = completedPickups.reduce((acc, p) => acc + getWeight(p.volume), 0);
+  const co2Saved = (totalWaste * 2.5) + (currentPoints * 0.1);
 
   const submitQuickFeedback = async (e) => {
     e.preventDefault();
     if (!feedbackMsg.trim()) return;
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      await axios.post(`${API_URL}/api/feedback/submit`, { message: `[Dashboard Quick Action] - ${feedbackMsg}` }, {
+      await axios.post('/api/feedback/submit', { message: `[Dashboard Quick Action] - ${feedbackMsg}` }, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setFeedbackSent(true);
@@ -89,18 +111,22 @@ const Dashboard = () => {
                 <div className="h-full bg-emerald-500 shadow-[0_0_10px_#10b981] transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
               </div>
               <p className="text-zinc-500 mt-1 uppercase tracking-widest text-[10px] font-bold">
-                {rank.level === 4 ? 'MAX RANK ACHIEVED' : `${currentPoints} / ${rank.max} XP to Level ${rank.level + 1}`}
+                {rank.level === 11 ? 'MAX RANK ACHIEVED ✨' : `${rank.remainingXP} XP to Level ${rank.level + 1}`}
               </p>
             </div>
           </div>
-          <div className="flex gap-4">
-            <div className="bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 border border-amber-200 dark:border-amber-500/30 font-black py-3 px-6 rounded-full flex flex-col items-center">
-              <span className="text-lg">24.5kg</span>
-              <span className="text-[10px] uppercase tracking-widest">Waste Collected</span>
+          <div className="flex flex-wrap gap-4">
+            <div className="bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 border border-amber-200 dark:border-amber-500/30 font-black py-3 px-6 rounded-3xl flex flex-col items-center min-w-[120px]">
+              <span className="text-xl font-mono">{totalWaste}kg</span>
+              <span className="text-[10px] uppercase tracking-widest opacity-70">Waste Fixed</span>
             </div>
-            <div className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border border-emerald-200 dark:border-emerald-500/30 font-black py-3 px-6 rounded-full flex flex-col items-center">
-              <span className="text-lg">💰 {user?.points || 0}</span>
-              <span className="text-[10px] uppercase tracking-widest">Global Wallet</span>
+            <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500 border border-blue-200 dark:border-blue-500/30 font-black py-3 px-6 rounded-3xl flex flex-col items-center min-w-[120px] shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+              <span className="text-xl font-mono">💨 {co2Saved.toFixed(1)}kg</span>
+              <span className="text-[10px] uppercase tracking-widest opacity-70">CO2 Offset</span>
+            </div>
+            <div className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border border-emerald-200 dark:border-emerald-500/30 font-black py-3 px-6 rounded-3xl flex flex-col items-center min-w-[120px]">
+              <span className="text-xl font-mono">💰 {user?.points || 0}</span>
+              <span className="text-[10px] uppercase tracking-widest opacity-70">Eco-Vault</span>
             </div>
           </div>
         </div>
@@ -140,17 +166,17 @@ const Dashboard = () => {
                 <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">🦊 Biological Impact</h3>
               </div>
               <div className="space-y-3">
-                <div className={`p-3 rounded-xl border transition-all ${currentPoints >= 50 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-50 grayscale'}`}>
-                  <p className="font-bold text-sm text-zinc-800 dark:text-zinc-200">🐢 Protected a Sea Turtle</p>
-                  <p className="text-[10px] text-zinc-500 mt-1">1kg plastic removed</p>
+                <div className={`p-3 rounded-xl border transition-all ${currentPoints >= 1000 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-50 grayscale'}`}>
+                  <p className="font-bold text-sm text-zinc-800 dark:text-zinc-200">🦁 Protected a Lion</p>
+                  <p className="text-[10px] text-zinc-500 mt-1">Apex Environmentalism Verified</p>
                 </div>
-                <div className={`p-3 rounded-xl border transition-all ${currentPoints >= 150 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-50 grayscale'}`}>
-                  <p className="font-bold text-sm text-zinc-800 dark:text-zinc-200">🐦 Safer habitat for birds</p>
-                  <p className="text-[10px] text-zinc-500 mt-1">Urban Cleanup Verified</p>
+                <div className={`p-3 rounded-xl border transition-all ${currentPoints >= 3000 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-50 grayscale'}`}>
+                  <p className="font-bold text-sm text-zinc-800 dark:text-zinc-200">🐘 Saved a Wildlife Corridor</p>
+                  <p className="text-[10px] text-zinc-500 mt-1">Sustainable Land Restoration</p>
                 </div>
-                <div className={`p-3 rounded-xl border transition-all ${currentPoints >= 300 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-50 grayscale'}`}>
-                  <p className="font-bold text-sm text-zinc-800 dark:text-zinc-200">🐟 Cleaner oceans for fish</p>
-                  <p className="text-[10px] text-zinc-500 mt-1">Waterway restoration</p>
+                <div className={`p-3 rounded-xl border transition-all ${currentPoints >= 5500 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-50 grayscale'}`}>
+                  <p className="font-bold text-sm text-zinc-800 dark:text-zinc-200">✨ Gaia's Absolute Chosen</p>
+                  <p className="text-[10px] text-zinc-500 mt-1">Full planet restoration achieved</p>
                 </div>
               </div>
             </div>

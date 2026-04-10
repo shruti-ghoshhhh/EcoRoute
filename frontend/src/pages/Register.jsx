@@ -35,7 +35,7 @@ const Register = () => {
     setLoading(true);
     
     try {
-      const res = await fetch('http://localhost:5000/api/auth/register', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
@@ -60,7 +60,7 @@ const Register = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await fetch('http://localhost:5000/api/auth/google', {
+      const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: credentialResponse.credential })
@@ -108,7 +108,7 @@ const Register = () => {
           ) : (
             <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <div className="text-center mb-6">
-                <motion.div className="text-5xl mb-3 grayscale opacity-80 decoration-0">🌿</motion.div>
+                <motion.div className="text-5xl mb-3">🌿</motion.div>
                 <h1 className="text-3xl font-extrabold text-zinc-800 dark:text-zinc-100">Sign Up</h1>
                 <p className="text-zinc-500 mt-2 text-sm">Join the mission to save wildlife</p>
               </div>

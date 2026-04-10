@@ -90,8 +90,7 @@ const Pickup = () => {
     if (!position) return alert("Please specify your extraction coordinates on the Map!");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const res = await fetch(`${API_URL}/api/pickups`, {
+      const res = await fetch('/api/pickups', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +136,7 @@ const Pickup = () => {
     if (!aiInput.trim()) return;
     setAiLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/chat/ask', {
+      const res = await fetch('/api/chat/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
