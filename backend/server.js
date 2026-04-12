@@ -2,8 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoMemoryServer } = require('mongodb-memory-server');
-
 const app = express();
 
 // Middleware
@@ -11,8 +9,9 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://eco-route-beryl.vercel.app"
-];
+  "https://eco-route-beryl.vercel.app",
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -56,7 +55,13 @@ const connectDB = async () => {
       await mongoose.connect(process.env.MONGO_URI);
       console.log(`🌍 Production MongoDB Atlas connected!`);
     } else {
+      console.log('No MONGO_URI provided in Environment Variables.');
+      if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+         throw new Error("MONGO_URI is required in production! Local in-memory DB is disabled on Render to prevent crashes.");
+      }
+      
       // Fallback: Spin up a full, local, in-memory MongoDB cluster!
+      const { MongoMemoryServer } = require('mongodb-memory-server');
       const mongoServer = await MongoMemoryServer.create();
       const uri = mongoServer.getUri();
 
@@ -65,6 +70,7 @@ const connectDB = async () => {
     }
   } catch (err) {
     console.error('MongoDB connection error:', err);
+    process.exit(1);
   }
 };
 connectDB();
