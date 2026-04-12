@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import LandingPage from './pages/LandingPage';
 import AnimalEdu from './pages/AnimalEdu';
 import AdminDashboard from './pages/AdminDashboard';
 import EcoBot from './components/EcoBot';
@@ -31,7 +32,13 @@ function App() {
           <Navbar />
           <main className="flex-1">
             <Routes>
-              <Route path="/" element={<Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />} />
+              <Route path="/" element={
+                user ? (
+                  <Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />
+                ) : (
+                  <LandingPage />
+                )
+              } />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
