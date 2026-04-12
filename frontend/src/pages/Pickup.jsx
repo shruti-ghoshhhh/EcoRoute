@@ -8,6 +8,7 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import { useAuthStore } from '../store/authStore';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
 let DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
@@ -90,7 +91,7 @@ const Pickup = () => {
     if (!position) return alert("Please specify your extraction coordinates on the Map!");
 
     try {
-      const res = await fetch('/api/pickups', {
+      const res = await fetch(`${API_URL}/api/pickups`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +137,7 @@ const Pickup = () => {
     if (!aiInput.trim()) return;
     setAiLoading(true);
     try {
-      const res = await fetch('/api/chat/ask', {
+      const res = await fetch(`${API_URL}/api/chat/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

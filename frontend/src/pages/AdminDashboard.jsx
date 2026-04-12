@@ -20,7 +20,7 @@ const AdminDashboard = () => {
   const [editingUserId, setEditingUserId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
-  const API_URL = ''; // Relative paths via Vite proxy
+  const API_URL = import.meta.env.VITE_API_URL || '';
   const config = { headers: { Authorization: `Bearer ${user.token}` } };
 
   const fetchAdminData = async () => {

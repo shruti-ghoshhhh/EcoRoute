@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 import { GoogleLogin } from '@react-oauth/google';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
 const SleekAnimalBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 bg-transparent flex items-center justify-center">
     <svg className="absolute w-full h-[150%] opacity-20 dark:opacity-[0.03] text-emerald-600 dark:text-emerald-400 select-none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 1000 1000">
@@ -34,7 +35,7 @@ const Login = () => {
     setLoading(true);
     
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -59,7 +60,7 @@ const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await fetch('/api/auth/google', {
+      const res = await fetch(`${API_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: credentialResponse.credential })

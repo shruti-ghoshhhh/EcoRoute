@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || '';
 const EcoBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [language, setLanguage] = useState('English');
@@ -21,7 +21,7 @@ const EcoBot = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/chat/ask', {
+      const res = await fetch(`${API_URL}/api/chat/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: `[Please reply exclusively in ${language}] ${userMsg}` }),

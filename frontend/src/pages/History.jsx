@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
 const History = () => {
   const [pickups, setPickups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +11,7 @@ const History = () => {
   useEffect(() => {
     const fetchPickups = async () => {
       try {
-        const res = await fetch('/api/pickups', {
+        const res = await fetch(`${API_URL}/api/pickups`, {
           headers: { 'Authorization': `Bearer ${user?.token}` }
         });
         const data = await res.json();

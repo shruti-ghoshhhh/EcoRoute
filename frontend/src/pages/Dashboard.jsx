@@ -5,6 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 import { useAuthStore } from '../store/authStore';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -56,7 +58,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchPickups = async () => {
       try {
-        const res = await axios.get('/api/pickups', {
+        const res = await axios.get(`${API_URL}/api/pickups`, {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
         setPickups(res.data);
@@ -84,7 +86,7 @@ const Dashboard = () => {
     e.preventDefault();
     if (!feedbackMsg.trim()) return;
     try {
-      await axios.post('/api/feedback/submit', { message: `[Dashboard Quick Action] - ${feedbackMsg}` }, {
+      await axios.post(`${API_URL}/api/feedback/submit`, { message: `[Dashboard Quick Action] - ${feedbackMsg}` }, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setFeedbackSent(true);

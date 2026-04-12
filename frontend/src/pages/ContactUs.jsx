@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 const ContactUs = () => {
   const { user } = useAuthStore();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
@@ -14,7 +16,7 @@ const ContactUs = () => {
     e.preventDefault();
     try {
       // Route through our secure Database Feedback API
-      await axios.post('/api/feedback/submit', { message: `[Contact Us: ${formData.subject}] - From: ${formData.name} (${formData.email}) - Message: ${formData.message}` }, {
+      await axios.post(`${API_URL}/api/feedback/submit`, { message: `[Contact Us: ${formData.subject}] - From: ${formData.name} (${formData.email}) - Message: ${formData.message}` }, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       setSubmitted(true);
