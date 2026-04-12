@@ -10,6 +10,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "https://eco-route-beryl.vercel.app",
+  "https://eco-route-two.vercel.app",
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
