@@ -1,5 +1,16 @@
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { getRank } from '../utils/levelUtils';
+import { useAuthStore } from '../store/authStore';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
+
+const RANK_COLORS = [
+  'border-yellow-500/40 bg-yellow-500/10',
+  'border-zinc-400/40 bg-zinc-400/10',
+  'border-amber-700/50 bg-amber-700/20',
+];
 
 const FloatingIcons = () => {
   const icons = [
@@ -17,16 +28,8 @@ const FloatingIcons = () => {
           key={index}
           className={`absolute bottom-[-150px] ${icon.size} grayscale`}
           style={{ left: icon.left }}
-          animate={{
-            y: ['0vh', '-120vh'],
-            rotate: [0, 90, 180, 270, 360]
-          }}
-          transition={{
-            duration: 25 + Math.random() * 10,
-            delay: icon.delay,
-            repeat: Infinity,
-            ease: "linear"
-          }}
+          animate={{ y: ['0vh', '-120vh'], rotate: [0, 90, 180, 270, 360] }}
+          transition={{ duration: 25 + Math.random() * 10, delay: icon.delay, repeat: Infinity, ease: "linear" }}
         >
           {icon.emoji}
         </motion.div>
@@ -36,18 +39,27 @@ const FloatingIcons = () => {
 };
 
 const Leaderboard = () => {
-  const topUsers = [
-    { rank: 1, name: "Sarah Jenkins", points: 14250, icon: "👑", color: "border-yellow-500/30 bg-yellow-500/10" },
-    { rank: 2, name: "David Lora", points: 11400, icon: "🥈", color: "border-zinc-400/30 bg-zinc-400/10" },
-    { rank: 3, name: "Elena Rostova", points: 9800, icon: "🥉", color: "border-amber-700/40 bg-amber-700/20" },
-    { rank: 4, name: "Marcus Torres", points: 7100, icon: "४", color: "border-zinc-800/50 bg-zinc-800/30 hover:border-emerald-500/30" },
-    { rank: 5, name: "Jessica Wu", points: 6300, icon: "५", color: "border-zinc-800/50 bg-zinc-800/30 hover:border-emerald-500/30" },
-    { rank: 6, name: "Alex Chen", points: 5900, icon: "६", color: "border-zinc-800/50 bg-zinc-800/30 hover:border-emerald-500/30" },
-    { rank: 7, name: "Mohammed Ali", points: 5100, icon: "७", color: "border-zinc-800/50 bg-zinc-800/30 hover:border-emerald-500/30" },
-    { rank: 8, name: "Chris Evans", points: 4200, icon: "८", color: "border-zinc-800/50 bg-zinc-800/30 hover:border-emerald-500/30" },
-    { rank: 9, name: "Sophia Martinez", points: 3100, icon: "९", color: "border-zinc-800/50 bg-zinc-800/30 hover:border-emerald-500/30" },
-    { rank: 10, name: "Liam O'Connor", points: 2800, icon: "१०", color: "border-zinc-800/50 bg-zinc-800/30 hover:border-emerald-500/30" }
-  ];
+  const { user } = useAuthStore();
+  const [topUsers, setTopUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/users/leaderboard`, {
+          headers: { Authorization: `Bearer ${user?.token}` }
+        });
+        setTopUsers(res.data);
+      } catch (err) {
+        console.error('Error fetching leaderboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user?.token) fetchLeaderboard();
+  }, [user]);
+
+  const getRowColor = (idx) => RANK_COLORS[idx] || 'border-zinc-800/50 bg-zinc-800/30 hover:border-emerald-500/30';
 
   return (
     <div className="min-h-screen relative flex flex-col items-center bg-[#09090b] p-6 text-zinc-200 overflow-hidden">
@@ -55,8 +67,8 @@ const Leaderboard = () => {
 
       <div className="w-full max-w-4xl relative z-10 mt-12 mb-20">
         <div className="text-center mb-12">
-          <motion.div 
-            animate={{ scale: [1, 1.05, 1] }} 
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
             transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
             className="text-7xl mb-6 grayscale"
           >
@@ -66,7 +78,7 @@ const Leaderboard = () => {
           <p className="text-zinc-500 mt-4 text-lg">The Top 10 EcoWarriors actively healing our planet.</p>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
@@ -76,43 +88,57 @@ const Leaderboard = () => {
             <span className="text-zinc-600 font-bold uppercase tracking-widest text-sm">Operative</span>
             <span className="text-zinc-600 font-bold uppercase tracking-widest text-sm">Reputation</span>
           </div>
-          
-          <div className="space-y-4">
-            {topUsers.map((user, idx) => (
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                key={user.rank} 
-                className={`p-5 md:p-6 rounded-3xl flex items-center gap-6 border ${user.color} transition-all hover:scale-[1.02] cursor-default shadow-lg`}
-              >
-                  <div className="text-3xl w-10 text-center drop-shadow-lg text-emerald-400 font-mono">
-                    {getRank(user.points).icon}
+
+          {loading ? (
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-20 rounded-3xl bg-zinc-800/50 animate-pulse" />
+              ))}
+            </div>
+          ) : topUsers.length === 0 ? (
+            <div className="text-center py-16 text-zinc-500">
+              <div className="text-5xl mb-4">🌱</div>
+              <p className="font-bold">No operatives ranked yet.</p>
+              <p className="text-sm mt-2">Complete pickups to earn points and appear here!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {topUsers.map((u, idx) => (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.08 }}
+                  key={u._id}
+                  className={`p-5 md:p-6 rounded-3xl flex items-center gap-6 border ${getRowColor(idx)} transition-all hover:scale-[1.02] cursor-default shadow-lg`}
+                >
+                  <div className="text-3xl w-10 text-center drop-shadow-lg font-mono">
+                    {idx === 0 ? '👑' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : getRank(u.points).icon}
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-zinc-950/50 border border-zinc-700/50 text-emerald-400 rounded-full flex items-center justify-center font-bold text-lg uppercase tracking-widest hidden sm:flex">
-                      {user.name.substring(0, 2)}
+                    <div className="h-12 w-12 bg-zinc-950/50 border border-zinc-700/50 text-emerald-400 rounded-full items-center justify-center font-bold text-lg uppercase tracking-widest hidden sm:flex">
+                      {u.name.substring(0, 2)}
                     </div>
                     <div>
-                      <h3 className="text-lg md:text-xl font-bold text-zinc-100">{user.name}</h3>
+                      <h3 className="text-lg md:text-xl font-bold text-zinc-100">{u.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Rank #{user.rank}</p>
+                        <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Rank #{idx + 1}</p>
                         <span className="text-zinc-600">•</span>
-                        <p className="text-[10px] text-emerald-500 uppercase tracking-widest font-black">{getRank(user.points).title}</p>
+                        <p className="text-[10px] text-emerald-500 uppercase tracking-widest font-black">{getRank(u.points).title}</p>
                       </div>
                     </div>
                   </div>
 
-                <div className="ml-auto flex items-center gap-2">
-                  <span className="text-xl md:text-2xl font-mono font-extrabold text-emerald-400 tracking-wider">
-                    {user.points.toLocaleString()}
-                  </span>
-                  <span className="text-xs text-emerald-500/50 uppercase font-bold tracking-widest hidden sm:inline">PTS</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="ml-auto flex items-center gap-2">
+                    <span className="text-xl md:text-2xl font-mono font-extrabold text-emerald-400 tracking-wider">
+                      {u.points.toLocaleString()}
+                    </span>
+                    <span className="text-xs text-emerald-500/50 uppercase font-bold tracking-widest hidden sm:inline">PTS</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

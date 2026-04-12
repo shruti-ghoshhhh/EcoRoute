@@ -11,6 +11,21 @@ exports.getUsers = async (req, res) => {
   }
 };
 
+// @desc    Get top 10 users by points for leaderboard
+// @route   GET /api/users/leaderboard
+exports.getLeaderboard = async (req, res) => {
+  try {
+    const users = await User.find({ isBanned: { $ne: true } })
+      .select('name points')
+      .sort({ points: -1 })
+      .limit(10);
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error fetching leaderboard' });
+  }
+};
+
+
 // @desc    Delete a user
 // @route   DELETE /api/users/:id
 exports.deleteUser = async (req, res) => {

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import axios from 'axios';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import { useAuthStore } from '../store/authStore';
@@ -91,30 +92,23 @@ const Pickup = () => {
     if (!position) return alert("Please specify your extraction coordinates on the Map!");
 
     try {
-      const res = await fetch(`${API_URL}/api/pickups`, {
-        method: 'POST',
+      await axios.post(`${API_URL}/api/pickups`, {
+        category: formData.category,
+        volume: formData.volume,
+        date: formData.date,
+        position
+      }, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${user?.token}`
-        },
-        body: JSON.stringify({
-          category: formData.category,
-          volume: formData.volume,
-          date: formData.date,
-          position
-        })
+        }
       });
 
-      if (res.ok) {
-        setSubmitted(true);
-        setTimeout(() => navigate('/history'), 2500);
-      } else {
-        const data = await res.json();
-        alert(data.error || "Failed to schedule pickup.");
-      }
+      setSubmitted(true);
+      setTimeout(() => navigate('/history'), 2500);
     } catch (err) {
       console.error(err);
-      alert("Network Error");
+      alert(err.response?.data?.error || "Network Error: Could not reach server.");
     }
   };
 
