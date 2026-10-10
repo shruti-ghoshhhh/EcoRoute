@@ -48,6 +48,11 @@ app.get('/', (req, res) => {
   res.send('EcoRoute API is running...');
 });
 
+// Health check endpoint (used by keep-alive ping)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
+
 // Database Connection
 const connectDB = async () => {
   try {
@@ -79,4 +84,22 @@ connectDB();
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+
+  // Keep-alive ping: prevents Render free tier from spinning down (pings every 14 min)
+  if (process.env.RENDER) {
+    const RENDER_URL = `https://ecoroute-o94j.onrender.com`;
+    setInterval(async () => {
+      try {
+        const https = require('https');
+        https.get(`${RENDER_URL}/health`, (res) => {
+          console.log(`🏓 Keep-alive ping sent. Status: ${res.statusCode}`);
+        }).on('error', (err) => {
+          console.error('Keep-alive ping failed:', err.message);
+        });
+      } catch (e) {
+        console.error('Keep-alive error:', e.message);
+      }
+    }, 14 * 60 * 1000); // every 14 minutes
+    console.log('🔁 Keep-alive ping enabled for Render free tier.');
+  }
 });
